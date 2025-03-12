@@ -1,0 +1,22 @@
+# Ignorar el entorno virtual
+venv/
+.env
+
+# Ignorar archivos de caché de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar base de datos SQLite local
+database.db
+*.sqlite3
+
+# Ignorar logs y archivos temporales
+*.log
+*.tmp
+
+# Ignorar configuraciones de VS Code
+.vscode/
+
+# Ignorar dependencias instaladas por pip en modo editable
+*.egg-info/
