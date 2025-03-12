@@ -7,16 +7,46 @@ from uuid import UUID, uuid4
     En realidad no afecta en nada a la base de datos.
 """
 
-class Cart(SQLModel, table=True):  # Modelo que representa el carrito
-    id: UUID = Field(default_factory=uuid4, primary_key=True)  # ID único del carrito
-    user_id: UUID = Field(foreign_key="user.id")  # Relación con el usuario
-    
-    items: List["CartItem"] = Relationship(back_populates="cart")  # Relación con los productos dentro del carrito
+# Modelo de entrada para validar la solicitud
+class CartCreate(SQLModel):
+    user_id: UUID  # Pydantic convierte el string a UUID si tiene formato válido
 
-class CartItem(SQLModel, table=True):  # Modelo que representa los productos en el carrito
+# Modelo que mapea a la base de datos
+class Cart(CartCreate, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    user_id: UUID = Field(foreign_key="user.id")
+    items: List["CartItem"] = Relationship(back_populates="cart")
+
+class CartItemCreate(SQLModel):
+    cart_id:UUID
+    product_id: int
+
+class CartItem(CartItemCreate, table=True):  # Modelo que representa los productos en el carrito
     id: UUID = Field(default_factory=uuid4, primary_key=True)  # ID único del ítem en el carrito
     cart_id: UUID = Field(foreign_key="cart.id")  # Relación con el carrito
-    product_id: UUID = Field(foreign_key="product.id")  # Relación con el producto
+    product_id: int = Field(foreign_key="product.id")  # Relación con el producto
     quantity: int = Field(default=1, gt=0)  # Cantidad mínima de 1 y mayor que cero
 
     cart: "Cart" = Relationship(back_populates="items")  # Relación inversa con el carrito
+    
+class CartItemPatch(SQLModel):
+    quantity: int = Field( ge=0 )
+    
+    
+    
+class CartItemResponse(SQLModel):
+    id: UUID
+    cart_id: UUID
+    product_id: int
+    quantity: int
+
+    class Config:
+        orm_mode = True    
+    
+class CartResponse(SQLModel):
+    id: UUID
+    user_id: UUID
+    items: List[CartItemResponse] = []
+
+    class Config:
+        orm_mode = True
