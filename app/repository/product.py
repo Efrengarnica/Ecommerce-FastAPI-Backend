@@ -14,6 +14,7 @@ class ProductRepository:
         # Agregar el nuevo producto
         session.add(product)
         session.commit()
+        session.refresh(product)
         return product
     
     @staticmethod

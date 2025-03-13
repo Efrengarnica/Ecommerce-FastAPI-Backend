@@ -35,11 +35,11 @@ def add_item_to_cart(cart_id: UUID, cart_item_create: CartItemCreate, session: S
     cart_item = CartItem(cart_id = cart_item_create.cart_id, product_id = cart_item_create.product_id)
     return CartGateway.add_item_to_cart(cart_id, cart_item, session)
   
-@router.delete("/{cart_id}/items/{cart_item_id}/")
+@router.delete("/{cart_id}/items/{cart_item_id}")
 def delete_cart_item(cart_id: UUID, cart_item_id: UUID, session: Session = Depends(get_session)) -> CartItem:
     return CartGateway.delete_cart_item(cart_item_id, session)
 
-@router.patch("/{cart_id}/items/{cart_item_id}/")
+@router.patch("/{cart_id}/items/{cart_item_id}")
 async def patch_cart_item(cart_id: UUID, cart_item_id: UUID, request: Request , session: Session = Depends(get_session)) -> CartItem:
     data = await request.json()
     return CartGateway.patch_cart_item(cart_item_id, CartItemPatch(**data), session)

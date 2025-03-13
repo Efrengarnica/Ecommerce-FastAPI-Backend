@@ -26,6 +26,7 @@ class CartRepository:
         #Algo interesante es que cuando hacer .add(cart) FastAPI sabe que como cart es una instancia de Cart entonces lo agrega a esa entidad
         session.add(cart)
         session.commit()
+        session.refresh(cart)
         return cart
 
     @staticmethod
@@ -73,6 +74,7 @@ class CartRepository:
             raise HTTPException(status_code = 404, detail = "Product not found")
         session.add(cart_item)
         session.commit()
+        session.refresh(cart_item)
         return cart_item
     
     @staticmethod
