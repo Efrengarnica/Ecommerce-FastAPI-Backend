@@ -1,7 +1,6 @@
 from fastapi import HTTPException
 from app.models.product import Product, ProductPatch
 from sqlmodel import Session
-# Aqui debe de ir la conexion con el repository
 from app.repository.product import ProductRepository
 
 class ProductGateway:
@@ -25,7 +24,7 @@ class ProductGateway:
     @classmethod
     def update_product(cls, product_id: int, product: Product, session: Session) -> Product:
         if product_id != product.id:
-            raise HTTPException(status_code=400, detail="Product ID does not match")
+            raise HTTPException(status_code = 400, detail = "Product ID does not match")
         return ProductRepository.update_product(product_id, product, session)
     
     @classmethod

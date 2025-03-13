@@ -2,7 +2,6 @@ from uuid import UUID
 from fastapi import HTTPException
 from app.models.user import User,UserPatch
 from sqlmodel import Session
-# Aqui debe de ir la conexion con el repository
 from app.repository.user import UserRepository
 
 class UserGateway:
@@ -26,7 +25,7 @@ class UserGateway:
     @classmethod
     def update_user(cls, user_id: UUID, user: User, session: Session) -> User:
         if user_id != UUID(user.id):
-            raise HTTPException(status_code=400, detail="User ID does not match")
+            raise HTTPException(status_code = 400, detail = "User ID does not match")
         return UserRepository.update_user(user_id, user, session)
 
     @classmethod

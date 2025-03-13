@@ -6,11 +6,9 @@ from app.models.user import User, UserPatch
 from sqlmodel import Session
 from app.database import get_session
 
-
-#Importante ya que tengo distintas entidades entonces tengo que tener endpoints distintos
 router = APIRouter()
 
-@router.post("/", response_model=User)
+@router.post("/", response_model = User)
 def create_user(user: User, session: Session = Depends(get_session)) -> User:
     return UserGateway.create_user(user, session)
 
@@ -37,16 +35,16 @@ async def patch_user(request: Request, user_id: UUID, session: Session = Depends
     
 @router.get("/html/")
 def get_html() -> HTMLResponse:
-    return HTMLResponse(content="<h1>Hello, HTML User!</h1>", status_code=200)
+    return HTMLResponse(content = "<h1>Hello, HTML User!</h1>", status_code = 200)
 
 @router.get("/plain/")
 def get_plain() -> PlainTextResponse:
-    return PlainTextResponse(content="Hello, Plain User!", status_code=200)
+    return PlainTextResponse(content = "Hello, Plain User!", status_code = 200)
 
 @router.get("/redirect/")
 def get_redirect() -> RedirectResponse:
-    return RedirectResponse(url="/users/plain/", status_code=302)
+    return RedirectResponse(url = "/users/plain/", status_code = 302)
 
 @router.get("/json/")
 def get_json() -> JSONResponse:
-    return JSONResponse(content={"message": "Hello, JSON User!"}, status_code=200)
+    return JSONResponse(content={"message": "Hello, JSON User!"}, status_code = 200)

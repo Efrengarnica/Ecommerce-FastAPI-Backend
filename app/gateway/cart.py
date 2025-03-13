@@ -5,6 +5,7 @@ from app.models.cart import Cart, CartItem, CartItemPatch
 from app.repository.cart import CartRepository
 
 class CartGateway:
+    
     @classmethod
     def create_cart(cls, cart: Cart, session: Session) -> Cart:
         return CartRepository.create_cart(cart, session)
@@ -28,11 +29,10 @@ class CartGateway:
             raise HTTPException(status_code=400, detail="Cart ID does not match")
         return CartRepository.add_item_to_cart(cart_id, cart_item, session)
        
-
     @classmethod
     def delete_cart_item(cls, cart_item_id: UUID, session: Session) -> CartItem:
         return CartRepository.delete_cart_item(cart_item_id, session)
 
     @classmethod
-    def patch_cart_item(cls, cart_item_id: UUID, cart_item_patch:CartItemPatch, session: Session) -> CartItem:
+    def patch_cart_item(cls, cart_item_id: UUID, cart_item_patch: CartItemPatch, session: Session) -> CartItem:
         return CartRepository.patch_cart_item(cart_item_id, cart_item_patch, session) 

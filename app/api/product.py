@@ -1,19 +1,14 @@
-from uuid import UUID
 from fastapi import APIRouter, Request, Depends
-from fastapi.responses import JSONResponse, RedirectResponse, PlainTextResponse, HTMLResponse
 from app.models.product import Product, ProductPatch
 from app.gateway.product import ProductGateway
 from sqlmodel import Session
 from app.database import get_session
 
-
-#Importante ya que tengo distintas entidades entonces tengo que tener endpoints distintos
 router = APIRouter()
 
-@router.post("/", response_model=Product)
+@router.post("/", response_model = Product)
 def create_product(product: Product, session: Session = Depends(get_session)) -> Product:
     return ProductGateway.create_product(product, session)
-
 
 @router.get("/")
 def get_products(session: Session = Depends(get_session)) -> list[Product]:
