@@ -39,7 +39,11 @@ class CartRepository:
         #una relacion "items" y no es un atributo entonces FastAPI no se siente en la necesidad de cargar las relaciones
         #entonces haces esto para que las cargue, al parecer debe de estar una sessionactiva para que funcione
         #Recuerda que tambien tienes que agregar cosas en el Model y en el Controller
-        stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart_id)
+        #option le dice que no sera una consukta ordinaria
+        #selectinload le dice que si encuentra la relacion Cart.items la traiga junto con la consulta
+        # CUANDO HACES UNA CONSULTA Y ESTA PRESENTA RELACIONES LAS RELCIONES NO VIENEN EN LA CONSULTA POR DEFECTO 
+        # DEBES DE DECIRLE QUE LAS TRAIGA DE MANERA EXPLICITA.
+        stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart_id)#
         cart = session.exec(stmt).one_or_none()
         #Verifica que exista el carrito en la base de datos
         if not cart:

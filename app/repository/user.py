@@ -80,4 +80,13 @@ class UserRepository:
         user_to_update.password = user_patch.password or user_to_update.password
         session.commit()
         session.refresh(user_to_update)
-        return user_to_update  
+        return user_to_update
+    
+    """ 
+        Cosas que puedo llegar a hacer son session
+        ✔ Obtener datos (get, all, filter, first)
+        ✔ Insertar datos (add, add_all)
+        ✔ Actualizar registros (update)
+        ✔ Eliminar registros (delete)
+        ✔ Consultas avanzadas (count, order_by, join)
+        ✔ Manejo de transacciones (rollback) """

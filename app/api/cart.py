@@ -30,6 +30,13 @@ def delete_cart(cart_id: UUID, session: Session = Depends(get_session)) -> Cart:
     return CartGateway.delete_cart(cart_id, session)
 
 # Endpoints para CartItem
+""" Recuerda, aqui ya no lo aplique pero debes de saber que cuando le pasas un modelo SQLModel con table = True 
+    habrá veces que FastApi intente transformar datos complejos como uuid, en la solicitud, y le salga bien antes de hacer la instancia de User
+    pero habra veces que cree user sin hacer las debidas conversiones y eso te marcara error, lo mejor es hacer tus entidades y 
+    crear otra clase con los mismos tipos de datos que tus entidades para que esas solo ocupen SQLMODEL y si verifique y convierta todo de 
+    manera correcta.
+    Aqui en este POST lo aplique así.
+"""
 @router.post("/{cart_id}/items/", response_model = CartItem)
 def add_item_to_cart(cart_id: UUID, cart_item_create: CartItemCreate, session: Session = Depends(get_session)) -> CartItem:
     cart_item = CartItem(cart_id = cart_item_create.cart_id, product_id = cart_item_create.product_id)

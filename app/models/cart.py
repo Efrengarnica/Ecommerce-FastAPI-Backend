@@ -41,13 +41,19 @@ class CartItem(CartItemCreate, table = True):
 class CartItemPatch(SQLModel):
     quantity: int = Field(ge = 0)
     
-    
+""" Mira cuando FastApi regresas un Objeto que es una entidad si esa entidad es sencilla y no tiene relaciones 
+    complicadas como una lista de objetos de otra entidad entonces puede trasnformar esa entidad a formato Json sin problemas 
+    Pero cuando hay una relacion complicada como en el caso del cart TU debes de decirle a fastApi como convertir 
+    eso en un formato json aceptable, es por eso que ocupamos lo de abajo, el decir orm_mode = True le dice a FastApi 
+    Que antes de transofrmar a json debes de considerar que los objetos son de esa manera
+    Al final todo es igual solo que el formato de salida debe de ser CartResponse para que fastApi sepa como manejar la conversion.
+"""
 # Esta parte es para que cuando hago una peticion get me devuelva los items asociados a mi carrito
 # Este modelo me permite que aparezcan en la solicitud en formato JSON los items, recordar que aprte de esto se necesita lo de Controller y lo de Repositoy.
 class CartItemResponse(SQLModel):
     id: UUID
     cart_id: UUID
-    product_id: int
+    product_id: int  
     quantity: int
     class Config:
         orm_mode = True    
@@ -57,4 +63,4 @@ class CartResponse(SQLModel):
     user_id: UUID
     items: List[CartItemResponse] = []
     class Config:
-        orm_mode = True
+        orm_mode = True # Esto hace que la lista de items haga esto "Oye, estos no son diccionarios normales, sino objetos ORM. Por favor, convierte sus atributos en JSON."
