@@ -50,15 +50,15 @@ class CartItemPatch(SQLModel):
 """
 # Esta parte es para que cuando hago una peticion get me devuelva los items asociados a mi carrito
 # Este modelo me permite que aparezcan en la solicitud en formato JSON los items, recordar que aprte de esto se necesita lo de Controller y lo de Repositoy.
-class CartItemResponse(SQLModel):
+class CartItemResponse(SQLModel): #BaseModel
     id: UUID
     cart_id: UUID
     product_id: int  
     quantity: int
     class Config:
-        orm_mode = True    
+        orm_mode = True    ##No es necesario
 
-class CartResponse(SQLModel):
+class CartResponse(SQLModel): #BaseModel
     id: UUID
     user_id: UUID
     items: List[CartItemResponse] = []
