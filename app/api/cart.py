@@ -1,6 +1,4 @@
-from fastapi import APIRouter, Request, Depends
-from sqlmodel import Session
-from app.database import get_session
+from fastapi import APIRouter, Request
 from uuid import UUID
 from typing import List
 from app.models.cart import Cart, CartItem, CartCreate, CartItemCreate, CartResponse, CartItemPatch
@@ -12,22 +10,22 @@ router = APIRouter()
 
 # Endpoints para Cart
 @router.post("/", response_model = Cart)
-def create_cart(cart_data: CartCreate, session: Session = Depends(get_session)) -> Cart:
+def create_cart(cart_data: CartCreate) -> Cart:
     cart = Cart(user_id = cart_data.user_id)
-    return CartGateway.create_cart(cart, session)
+    return CartGateway.create_cart(cart)
 
 @router.get("/")
-def get_carts(session: Session = Depends(get_session)) -> List[Cart]:
-    return CartGateway.get_carts(session)
+def get_carts() -> List[Cart]:
+    return CartGateway.get_carts()
 
 #CartResponse me ayuda que se puedan mostrar los items, además debes de agregarle algo al repository para que funcione y tambien en el model.
 @router.get("/{cart_id}", response_model = CartResponse)
-def get_cart(cart_id: UUID, session: Session = Depends(get_session)) -> Cart:
-    return CartGateway.get_cart(cart_id, session)
+def get_cart(cart_id: UUID) -> Cart:
+    return CartGateway.get_cart(cart_id)
 
 @router.delete("/{cart_id}")
-def delete_cart(cart_id: UUID, session: Session = Depends(get_session)) -> Cart:
-    return CartGateway.delete_cart(cart_id, session)
+def delete_cart(cart_id: UUID) -> Cart:
+    return CartGateway.delete_cart(cart_id)
 
 # Endpoints para CartItem
 """ Recuerda, aqui ya no lo aplique pero debes de saber que cuando le pasas un modelo SQLModel con table = True 
@@ -38,15 +36,15 @@ def delete_cart(cart_id: UUID, session: Session = Depends(get_session)) -> Cart:
     Aqui en este POST lo aplique así.
 """
 @router.post("/{cart_id}/items/", response_model = CartItem)
-def add_item_to_cart(cart_id: UUID, cart_item_create: CartItemCreate, session: Session = Depends(get_session)) -> CartItem:
+def add_item_to_cart(cart_id: UUID, cart_item_create: CartItemCreate) -> CartItem:
     cart_item = CartItem(cart_id = cart_item_create.cart_id, product_id = cart_item_create.product_id)
-    return CartGateway.add_item_to_cart(cart_id, cart_item, session)
+    return CartGateway.add_item_to_cart(cart_id, cart_item)
   
 @router.delete("/{cart_id}/items/{cart_item_id}")
-def delete_cart_item(cart_id: UUID, cart_item_id: UUID, session: Session = Depends(get_session)) -> CartItem:
-    return CartGateway.delete_cart_item(cart_item_id, session)
+def delete_cart_item(cart_id: UUID, cart_item_id: UUID) -> CartItem:
+    return CartGateway.delete_cart_item(cart_item_id)
 
 @router.patch("/{cart_id}/items/{cart_item_id}")
-async def patch_cart_item(cart_id: UUID, cart_item_id: UUID, request: Request , session: Session = Depends(get_session)) -> CartItem:
+async def patch_cart_item(cart_id: UUID, cart_item_id: UUID, request: Request ) -> CartItem:
     data = await request.json()
-    return CartGateway.patch_cart_item(cart_item_id, CartItemPatch(**data), session)
+    return CartGateway.patch_cart_item(cart_item_id, CartItemPatch(**data))
