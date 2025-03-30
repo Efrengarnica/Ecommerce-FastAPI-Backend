@@ -4,6 +4,7 @@
     automaticamente en tables de mi base de datos, si no hago los imports no se crean las tablas.
 """
 from typing import Generator
+from contextlib import contextmanager
 from sqlmodel import create_engine, Session, SQLModel
 from app.models.user import User
 from app.models.product import Product
@@ -22,6 +23,7 @@ create_db()
 # Dependencia para obtener la sesión de la base de datos
 #Por lo que entiendo esto genera una sesion, pero la va a estar manejando FastAPI y cada que termine de ocuparla la cierra en automático
 #Esto es difrente a como nos dijo Alexis.
+@contextmanager
 def get_session() -> Generator[Session, None, None]: #Sesion es lo que pausa el yield, elt ipo de dato, 1er None es porque No recibe nada la funcion
     #El tercer None es porque la funcion no retorna nada
     session = Session(engine)
