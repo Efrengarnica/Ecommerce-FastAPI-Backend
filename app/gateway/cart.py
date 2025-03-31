@@ -1,6 +1,7 @@
 from uuid import UUID
 from fastapi import HTTPException
-from app.models.cart import Cart, CartItem, CartItemPatch
+from app.models.cart import Cart, CartItem
+from app.schemas.cart import CartItemPatch
 from app.repository.cart import CartRepository
 
 class CartGateway:
@@ -23,10 +24,8 @@ class CartGateway:
     
     # Métodos para los items del carrito (CartItem)
     @classmethod
-    def add_item_to_cart(cls, cart_id: UUID, cart_item: CartItem) -> CartItem:
-        if cart_id != cart_item.cart_id:
-            raise HTTPException(status_code=400, detail="Cart ID does not match")
-        return CartRepository.add_item_to_cart(cart_id, cart_item)
+    def add_item_to_cart(cls, cart_item: CartItem) -> CartItem:
+        return CartRepository.add_item_to_cart(cart_item)
        
     @classmethod
     def delete_cart_item(cls, cart_item_id: UUID) -> CartItem:
