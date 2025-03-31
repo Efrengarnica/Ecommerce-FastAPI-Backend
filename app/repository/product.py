@@ -3,6 +3,7 @@ from app.models.product import Product
 from app.schemas.product import ProductPatch
 from fastapi import HTTPException
 from app.database import get_session
+from app.exceptions.exceptions import (ProductNameAlreadyExistsException, ProductNotFoundException)
 
 class ProductRepository:
     
@@ -13,7 +14,7 @@ class ProductRepository:
             existing_product = session.exec(query).first()
             #Validar que el nombre no este en la base de datos
             if existing_product:
-                raise HTTPException(status_code = 400, detail = "Product name already registered")
+                raise ProductNameAlreadyExistsException(product.name)
             # Agregar el nuevo producto
             session.add(product)
             session.commit()
@@ -34,7 +35,7 @@ class ProductRepository:
             if product:
                 return product
             #Validar que exista el producto
-            raise HTTPException(status_code = 404, detail = "Product not found")
+            raise ProductNotFoundException(product_id)
         
     @staticmethod
     def delete_product(product_id: int) -> Product:
@@ -42,7 +43,7 @@ class ProductRepository:
             product = session.get(Product, product_id)
             #Validar que exista el producto
             if product is None:
-                raise HTTPException(status_code = 404, detail = "Product not found")
+                raise ProductNotFoundException(product_id)
             session.delete(product)
             session.commit()
             return product
@@ -54,11 +55,11 @@ class ProductRepository:
             product_to_update = session.get(Product, product.id)
             #Validar que exita el producto
             if product_to_update is None:
-                raise HTTPException(status_code = 404, detail = "Product not found")
+                raise ProductNotFoundException(product.id)
             # Verificar si el nombre del producto ya existe
             existing_product = session.exec(select(Product).where(Product.name == product.name)).first()
             if existing_product and existing_product.id != product.id:  # Verificar si el nombre pertenece a otro producto
-                raise HTTPException(status_code = 400, detail = "Product name already exists")
+                raise ProductNameAlreadyExistsException(product.name)
             # Actualizar los campos del usuario
             product_to_update.name = product.name
             product_to_update.price = product.price
@@ -75,13 +76,13 @@ class ProductRepository:
             product_to_update = session.get(Product, product_id)
             #Validar que exita el producto
             if product_to_update is None:
-                raise HTTPException(status_code = 404, detail = "Product not found")
+                raise ProductNotFoundException(product_id)
             #Validar que en la solicitud vaya el campo name, es decir que no sea None
             if product_patch.name:
                 # Verificar si el nombre del producto ya existe
                 existing_product = session.exec(select(Product).where(Product.name == product_patch.name)).first()
                 if existing_product and existing_product.id != product_id:  # Verificar si el nombre pertenece a otro producto
-                    raise HTTPException(status_code = 400, detail = "Product name already exists")
+                    raise ProductNameAlreadyExistsException(product_patch.name)
             # Actualizar solo los campos proporcionados en user_patch
             #Cuando usas or en python aqui indica que si hay 2 true se queda con el primero
             product_to_update.name = product_patch.name or product_to_update.name
