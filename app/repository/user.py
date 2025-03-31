@@ -1,5 +1,6 @@
 from sqlmodel import Session, select
-from app.models.user import User, UserPatch
+from app.models.user import User
+from app.schemas.user import UserPatch
 from fastapi import HTTPException
 from uuid import UUID
 from app.database import get_session
@@ -49,10 +50,10 @@ class UserRepository:
             return user
 
     @staticmethod
-    def update_user(user_id: UUID, user: User):
+    def update_user(user: User) -> User:
         with get_session() as session:
             # Buscar el usuario por ID en la base de datos
-            user_to_update = session.get(User, user_id)
+            user_to_update = session.get(User, user.id)
             #Verificar que el usuario existe
             if user_to_update is None:
                 raise HTTPException(status_code = 404, detail = "User not found")
