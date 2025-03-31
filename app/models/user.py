@@ -8,10 +8,3 @@ class User(SQLModel, table = True): #Table True hace que sea una tabla en mi bas
     email: str = Field(index = True, unique = True) # Indexado y único
     age: int | None = None  # Campo opcional
     password: str
-
-#Para poder realizar el patch    
-class UserPatch(SQLModel):
-    name: str | None = None
-    email: str | None = None
-    age: int | None = None
-    password: str | None = None
