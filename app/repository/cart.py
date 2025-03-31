@@ -7,6 +7,7 @@ from app.models.user import User
 from app.models.product import Product
 from sqlalchemy.orm import selectinload
 from app.database import get_session
+from app.exceptions.exceptions import (CartAlreadyRegisteredException, CartItemAlreadyRegisteredException, CartItemNotFoundException, CartNotFoundException, ProductNotFoundException, UserNotFoundException)
 
 #Los repository son los que se conectan mediante una session a la base de datos SQLITE, DEJA RECUERDO DE DONDE VIENE SQLLITE
 #En este repository esta el de Cart y CartItem, los hice aqui mismo, solo tener cuidado de no usar los mismos nombres en las funciones
@@ -20,11 +21,11 @@ class CartRepository:
             # Validar si el cart ya está registrado
             existing_cart = session.get(Cart, cart.id)
             if existing_cart:
-                raise HTTPException(status_code = 400, detail = "Cart already registered")
+                raise CartAlreadyRegisteredException(cart.id)
             # Validar que el usuario exista
             existing_user = session.get(User, cart.user_id)
             if not existing_user:
-                raise HTTPException(status_code = 404, detail = "User not found")
+                raise UserNotFoundException(cart.user_id)
             session.add(cart)
             session.commit()
             session.refresh(cart)
@@ -55,7 +56,7 @@ class CartRepository:
             
             #Verifica que exista el carrito en la base de datos
             if not existing_cart:
-                raise HTTPException(status_code=404, detail="Cart not found")
+                raise CartNotFoundException(cart_id)
             stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart_id)
             cart = session.exec(stmt).one_or_none()
             return cart
@@ -65,7 +66,7 @@ class CartRepository:
         with get_session() as session:
             existing_cart = session.get(Cart, cart_id)
             if not existing_cart:
-                raise HTTPException(status_code = 404, detail = "Cart not found")
+                raise CartNotFoundException(cart_id)
             stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart_id)
             cart = session.exec(stmt).one_or_none()
             session.delete(existing_cart)
@@ -80,15 +81,15 @@ class CartRepository:
             existing_cart_item = session.get(CartItem, cart_item.id)
             #Validar si el cartItem existe en la base de datos
             if existing_cart_item:
-                raise HTTPException(status_code = 400, detail = "CartItem already registered")
+                raise CartItemAlreadyRegisteredException(cart_item.id)
             # Validar que el carrito exista
             existing_cart = session.get(Cart, cart_item.cart_id)
             if not existing_cart:
-                raise HTTPException(status_code = 404, detail = "Cart not found")
+                raise CartNotFoundException(cart_item.cart_id)
             # Validar que el producto exista
             existing_product = session.get(Product, cart_item.product_id)
             if not existing_product:
-                raise HTTPException(status_code = 404, detail = "Product not found")
+                raise ProductNotFoundException(cart_item.product_id)
             session.add(cart_item)
             session.commit()
             session.refresh(cart_item)
@@ -99,7 +100,7 @@ class CartRepository:
         with get_session() as session:
             item_cart = session.get(CartItem, cart_item_id)
             if not item_cart:
-                raise HTTPException(status_code = 404, detail = "Cart item not found")
+                raise CartItemNotFoundException(cart_item_id)
             session.delete(item_cart)
             session.commit()
             return item_cart
@@ -110,7 +111,7 @@ class CartRepository:
             cart_item_to_update = session.get(CartItem, cart_item_id)
             #Validar que el CartItem exista
             if cart_item_to_update is None:
-                raise HTTPException(status_code = 404, detail = "CartItem not found")
+                raise CartItemNotFoundException(cart_item_id)
             cart_item_to_update.quantity = cart_item_patch.quantity
             session.commit()
             session.refresh(cart_item_to_update)
