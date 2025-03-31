@@ -1,5 +1,6 @@
-from sqlmodel import Session, select
-from app.models.product import Product, ProductPatch
+from sqlmodel import select
+from app.models.product import Product 
+from app.schemas.product import ProductPatch
 from fastapi import HTTPException
 from app.database import get_session
 
@@ -47,16 +48,16 @@ class ProductRepository:
             return product
     
     @staticmethod
-    def update_product(product_id: int, product: Product):
+    def update_product(product: Product) -> Product:
         with get_session() as session:
             # Buscar el usuario por ID en la base de datos
-            product_to_update = session.get(Product, product_id)
+            product_to_update = session.get(Product, product.id)
             #Validar que exita el producto
             if product_to_update is None:
                 raise HTTPException(status_code = 404, detail = "Product not found")
             # Verificar si el nombre del producto ya existe
             existing_product = session.exec(select(Product).where(Product.name == product.name)).first()
-            if existing_product and existing_product.id != product_id:  # Verificar si el nombre pertenece a otro producto
+            if existing_product and existing_product.id != product.id:  # Verificar si el nombre pertenece a otro producto
                 raise HTTPException(status_code = 400, detail = "Product name already exists")
             # Actualizar los campos del usuario
             product_to_update.name = product.name

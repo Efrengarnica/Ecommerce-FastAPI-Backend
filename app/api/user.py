@@ -2,34 +2,43 @@ from uuid import UUID
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, RedirectResponse, PlainTextResponse, HTMLResponse
 from app.gateway.user import UserGateway
-from app.models.user import User, UserPatch
+from app.models.user import User
+from app.schemas.user import UserPatch, UserResponse, UserCreate, UserPut
 
 router = APIRouter()
 
-@router.post("/", response_model = User)
-def create_user(user: User) -> User:
-    return UserGateway.create_user(user)
+@router.post("/", response_model = UserResponse)
+def create_user(user_create: UserCreate) -> UserResponse:
+    user_entity = User(**user_create.model_dump())
+    created_user = UserGateway.create_user(user_entity)
+    return UserResponse.model_validate(created_user)
 
-@router.get("/")
-def get_users() -> list[User]:
-    return UserGateway.get_users()
+@router.get("/", response_model=list[UserResponse])
+def get_users() -> list[UserResponse]:
+    users = UserGateway.get_users()
+    return [UserResponse.model_validate(user) for user in users] 
 
-@router.get("/{user_id}")
-def get_user(user_id: UUID) -> User:
-    return UserGateway.get_user(user_id)
+@router.get("/{user_id}", response_model = UserResponse)
+def get_user(user_id: UUID) -> UserResponse:
+    created_user = UserGateway.get_user(user_id)
+    return UserResponse.model_validate(created_user)
 
-@router.delete("/{user_id}")
-def delete_user(user_id: UUID) -> User:
-    return UserGateway.delete_user(user_id)
+@router.delete("/{user_id}", response_model = UserResponse)
+def delete_user(user_id: UUID) -> UserResponse:
+    created_user = UserGateway.delete_user(user_id)
+    return UserResponse.model_validate(created_user)
 
-@router.put("/{user_id}")
-def update_user(user_id: UUID, user: User) -> User:
-    return UserGateway.update_user(user_id, user)
+@router.put("/", response_model = UserResponse)
+def update_user(user_create: UserPut) -> UserResponse:
+    user_entity = User(**user_create.model_dump())
+    created_user = UserGateway.update_user(user_entity)
+    return UserResponse.model_validate(created_user)
 
 @router.patch("/{user_id}")
-async def patch_user(request: Request, user_id: UUID) -> User:
+async def patch_user(request: Request, user_id: UUID) -> UserResponse:
     data = await request.json()
-    return UserGateway.patch_user(user_id, UserPatch(**data))
+    created_user = UserGateway.patch_user(user_id, UserPatch(**data))
+    return UserResponse.model_validate(created_user)
     
 @router.get("/html/")
 def get_html() -> HTMLResponse:

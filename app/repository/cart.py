@@ -1,7 +1,8 @@
 from sqlmodel import select
 from uuid import UUID
 from fastapi import HTTPException
-from app.models.cart import Cart, CartItem, CartItemPatch
+from app.models.cart import Cart, CartItem
+from app.schemas.cart import CartItemPatch
 from app.models.user import User
 from app.models.product import Product
 from sqlalchemy.orm import selectinload
@@ -24,21 +25,25 @@ class CartRepository:
             existing_user = session.get(User, cart.user_id)
             if not existing_user:
                 raise HTTPException(status_code = 404, detail = "User not found")
-            #Agregar a la base de datos y guardar los cambios
-            #Algo interesante es que cuando hacer .add(cart) FastAPI sabe que como cart es una instancia de Cart entonces lo agrega a esa entidad
             session.add(cart)
             session.commit()
             session.refresh(cart)
-            return cart
+            # Cargar la relación 'items' mediante eager loading después del commit
+            stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart.id)
+            cart_all = session.exec(stmt).one_or_none()
+            return cart_all
 
     @staticmethod
     def get_carts() -> list[Cart]:
         with get_session() as session:
-            return session.exec(select(Cart)).all()
+            stmt = select(Cart).options(selectinload(Cart.items))
+            carts = session.exec(stmt).all()
+            return carts
     
     @staticmethod
     def get_cart(cart_id: UUID) -> Cart:
         with get_session() as session:
+            existing_cart = session.get(Cart, cart_id)
             #Este es el otro apartado que hay que agregar para que se muestren los Items en el carrito, al parecer como solo existe
             #una relacion "items" y no es un atributo entonces FastAPI no se siente en la necesidad de cargar las relaciones
             #entonces haces esto para que las cargue, al parecer debe de estar una sessionactiva para que funcione
@@ -47,28 +52,30 @@ class CartRepository:
             #selectinload le dice que si encuentra la relacion Cart.items la traiga junto con la consulta
             # CUANDO HACES UNA CONSULTA Y ESTA PRESENTA RELACIONES LAS RELCIONES NO VIENEN EN LA CONSULTA POR DEFECTO 
             # DEBES DE DECIRLE QUE LAS TRAIGA DE MANERA EXPLICITA.
-            stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart_id)#
-            cart = session.exec(stmt).one_or_none()
+            
             #Verifica que exista el carrito en la base de datos
-            if not cart:
+            if not existing_cart:
                 raise HTTPException(status_code=404, detail="Cart not found")
+            stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart_id)
+            cart = session.exec(stmt).one_or_none()
             return cart
     
     @staticmethod
     def delete_cart(cart_id: UUID) -> Cart:
         with get_session() as session:
-            cart = session.get(Cart, cart_id)
-            if not cart:
+            existing_cart = session.get(Cart, cart_id)
+            if not existing_cart:
                 raise HTTPException(status_code = 404, detail = "Cart not found")
-            session.delete(cart)
+            stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart_id)
+            cart = session.exec(stmt).one_or_none()
+            session.delete(existing_cart)
             session.commit()
             return cart
         #A mi entendimiento parece ser que el put y el patch no seran necesarios ya que no me interesa cambiar nada del carrito en si.
 
-
     # Repository de CartItem (producto dentro del carrito)
     @staticmethod
-    def add_item_to_cart(cart_id: UUID, cart_item: CartItem) -> CartItem:
+    def add_item_to_cart(cart_item: CartItem) -> CartItem:
         with get_session() as session:
             existing_cart_item = session.get(CartItem, cart_item.id)
             #Validar si el cartItem existe en la base de datos

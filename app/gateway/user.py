@@ -1,6 +1,6 @@
 from uuid import UUID
-from fastapi import HTTPException
-from app.models.user import User,UserPatch
+from app.models.user import User
+from app.schemas.user import UserPatch
 from app.repository.user import UserRepository
 
 class UserGateway:
@@ -22,10 +22,8 @@ class UserGateway:
         return UserRepository.delete_user(user_id)
     
     @classmethod
-    def update_user(cls, user_id: UUID, user: User) -> User:
-        if user_id != UUID(user.id):
-            raise HTTPException(status_code = 400, detail = "User ID does not match")
-        return UserRepository.update_user(user_id, user)
+    def update_user(cls, user: User) -> User:
+        return UserRepository.update_user(user)
 
     @classmethod
     def patch_user(cls, user_id: UUID, user_patch: UserPatch) -> User:
