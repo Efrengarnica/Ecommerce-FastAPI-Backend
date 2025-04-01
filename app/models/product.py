@@ -13,3 +13,4 @@ class Product(SQLModel, table = True): #Table True hace que sea una tabla en mi 
         index = True,
         description = "Product category (e.g., women, men)"
     )
+    image:str

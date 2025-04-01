@@ -12,6 +12,7 @@ class ProductResponse(BaseModel):
     name: str 
     price: float 
     category: str
+    image:str
     
     model_config = {
         "from_attributes": True,  
