@@ -59,3 +59,9 @@ class InternalServerErrorException(Exception):
         self.detail = detail
         self.message = detail
         super().__init__(self.message)
+        
+class CloudinaryUploadException(Exception):
+    def __init__(self, detail: str):
+        self.detail = detail
+        self.message = f"Error al subir imagen: {detail}"
+        super().__init__(self.message)
