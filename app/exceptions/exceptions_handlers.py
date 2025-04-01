@@ -1,6 +1,6 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from .exceptions import (UserNotFoundException, EmailAlreadyRegisteredException, ProductNotFoundException, ProductNameAlreadyExistsException, CartNotFoundException, CartAlreadyRegisteredException, CartItemNotFoundException, CartItemAlreadyRegisteredException, DatabaseIntegrityException, InternalServerErrorException )
+from .exceptions import (CloudinaryUploadException, UserNotFoundException, EmailAlreadyRegisteredException, ProductNotFoundException, ProductNameAlreadyExistsException, CartNotFoundException, CartAlreadyRegisteredException, CartItemNotFoundException, CartItemAlreadyRegisteredException, DatabaseIntegrityException, InternalServerErrorException )
 
 async def user_not_found_handler(request: Request, exc: UserNotFoundException):
     return JSONResponse(status_code=404, content={"detail": exc.message})
@@ -30,4 +30,7 @@ async def database_integrity_exception_handler(request: Request, exc: DatabaseIn
     return JSONResponse(status_code=500, content={"detail": exc.message})
 
 async def internal_server_error_exception_handler(request: Request, exc: InternalServerErrorException):
+    return JSONResponse(status_code=500, content={"detail": exc.message})
+
+async def cloudinary_upload_exception_handler(request: Request, exc: CloudinaryUploadException):
     return JSONResponse(status_code=500, content={"detail": exc.message})
