@@ -64,6 +64,7 @@ class ProductRepository:
             product_to_update.name = product.name
             product_to_update.price = product.price
             product_to_update.category = product.category
+            product_to_update.image = product.image
             # Confirmar la actualización en la base de datos
             session.commit()
             # Refrescar el usuario para obtener los datos actualizados
@@ -91,3 +92,14 @@ class ProductRepository:
             session.commit()
             session.refresh(product_to_update)
             return product_to_update  
+                
+    @staticmethod
+    def patch_product_image(product_id: int, image_url: str) -> Product:
+        with get_session() as session:
+            product_to_update = session.get(Product, product_id)
+            if product_to_update is None:
+                raise ProductNotFoundException(product_id)
+            product_to_update.image = image_url or product_to_update.image
+            session.commit()
+            session.refresh(product_to_update)
+            return product_to_update
