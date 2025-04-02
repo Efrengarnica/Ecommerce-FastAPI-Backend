@@ -1,6 +1,5 @@
 from sqlmodel import select
 from uuid import UUID
-from fastapi import HTTPException
 from app.models.cart import Cart, CartItem
 from app.schemas.cart import CartItemPatch
 from app.models.user import User
@@ -8,6 +7,7 @@ from app.models.product import Product
 from sqlalchemy.orm import selectinload
 from app.database import get_session
 from app.exceptions.exceptions import (CartAlreadyRegisteredException, CartItemAlreadyRegisteredException, CartItemNotFoundException, CartNotFoundException, ProductNotFoundException, UserNotFoundException)
+from app.schemas.product import ProductResponse
 
 #Los repository son los que se conectan mediante una session a la base de datos SQLITE, DEJA RECUERDO DE DONDE VIENE SQLLITE
 #En este repository esta el de Cart y CartItem, los hice aqui mismo, solo tener cuidado de no usar los mismos nombres en las funciones
@@ -29,15 +29,17 @@ class CartRepository:
             session.add(cart)
             session.commit()
             session.refresh(cart)
-            # Cargar la relación 'items' mediante eager loading después del commit
-            stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart.id)
+            # Cargar la relación 'items' y la relación 'product' de cada item de forma ansiosa
+            stmt = select(Cart).options(
+                selectinload(Cart.items).selectinload(CartItem.product)
+            ).where(Cart.id == cart.id)
             cart_all = session.exec(stmt).one_or_none()
             return cart_all
 
     @staticmethod
     def get_carts() -> list[Cart]:
         with get_session() as session:
-            stmt = select(Cart).options(selectinload(Cart.items))
+            stmt = select(Cart).options(selectinload(Cart.items).selectinload(CartItem.product))
             carts = session.exec(stmt).all()
             return carts
     
@@ -53,11 +55,10 @@ class CartRepository:
             #selectinload le dice que si encuentra la relacion Cart.items la traiga junto con la consulta
             # CUANDO HACES UNA CONSULTA Y ESTA PRESENTA RELACIONES LAS RELCIONES NO VIENEN EN LA CONSULTA POR DEFECTO 
             # DEBES DE DECIRLE QUE LAS TRAIGA DE MANERA EXPLICITA.
-            
             #Verifica que exista el carrito en la base de datos
             if not existing_cart:
                 raise CartNotFoundException(cart_id)
-            stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart_id)
+            stmt = select(Cart).options(selectinload(Cart.items).selectinload(CartItem.product)).where(Cart.id == cart_id)
             cart = session.exec(stmt).one_or_none()
             return cart
     
@@ -67,12 +68,35 @@ class CartRepository:
             existing_cart = session.get(Cart, cart_id)
             if not existing_cart:
                 raise CartNotFoundException(cart_id)
-            stmt = select(Cart).options(selectinload(Cart.items)).where(Cart.id == cart_id)
+            stmt = select(Cart).options(selectinload(Cart.items).selectinload(CartItem.product)).where(Cart.id == cart_id)
             cart = session.exec(stmt).one_or_none()
             session.delete(existing_cart)
             session.commit()
             return cart
         #A mi entendimiento parece ser que el put y el patch no seran necesarios ya que no me interesa cambiar nada del carrito en si.
+        
+    @staticmethod
+    def clear_cart_items(cart_id: UUID) -> Cart:
+        with get_session() as session:
+            cart = session.exec(
+                select(Cart)
+                .options(selectinload(Cart.items).selectinload(CartItem.product))
+                .where(Cart.id == cart_id)
+                ).first()
+            if not cart:
+                raise CartNotFoundException(cart_id)
+            # Eliminamos todos los items del carrito
+            for item in cart.items:
+                session.delete(item)
+            session.commit()
+            # Reconsultamos el carrito para obtener el estado actualizado
+            updated_cart = session.exec(
+                select(Cart)
+                .options(selectinload(Cart.items).selectinload(CartItem.product))
+                .where(Cart.id == cart_id)
+            ).first()
+            return updated_cart
+
 
     # Repository de CartItem (producto dentro del carrito)
     @staticmethod
@@ -93,17 +117,29 @@ class CartRepository:
             session.add(cart_item)
             session.commit()
             session.refresh(cart_item)
-            return cart_item
+             # En lugar de usar session.refresh, hacemos una consulta que cargue la relación 'product'
+            stmt = select(CartItem).options(selectinload(CartItem.product)).where(CartItem.id == cart_item.id)
+            full_cart_item = session.exec(stmt).one_or_none()
+            return full_cart_item
     
     @staticmethod
     def delete_cart_item(cart_item_id: UUID) -> CartItem:
         with get_session() as session:
-            item_cart = session.get(CartItem, cart_item_id)
-            if not item_cart:
+            stmt = select(CartItem).options(selectinload(CartItem.product)).where(CartItem.id == cart_item_id)
+            full_cart_item = session.exec(stmt).one_or_none()
+            if not full_cart_item:
                 raise CartItemNotFoundException(cart_item_id)
-            session.delete(item_cart)
+            session.delete(full_cart_item)
             session.commit()
-            return item_cart
+            # Construye un diccionario con los datos necesarios
+            response_data = {
+                "id": full_cart_item.id,
+                "cart_id": full_cart_item.cart_id,
+                "product_id": full_cart_item.product_id,
+                "quantity": full_cart_item.quantity,
+                "product": ProductResponse.model_validate(full_cart_item.product) if full_cart_item.product else None
+            }
+            return CartItem(**response_data)
     
     @staticmethod
     def patch_cart_item(cart_item_id: UUID, cart_item_patch: CartItemPatch) -> CartItem:
@@ -115,4 +151,6 @@ class CartRepository:
             cart_item_to_update.quantity = cart_item_patch.quantity
             session.commit()
             session.refresh(cart_item_to_update)
-            return cart_item_to_update
+            stmt = select(CartItem).options(selectinload(CartItem.product)).where(CartItem.id == cart_item_id)
+            full_cart_item = session.exec(stmt).one_or_none()
+            return full_cart_item
