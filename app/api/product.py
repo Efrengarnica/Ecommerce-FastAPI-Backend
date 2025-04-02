@@ -1,6 +1,4 @@
-from fastapi import APIRouter,Depends, File, Form, Request, UploadFile
-
-from app.models.product import Product
+from fastapi import APIRouter,File, Form, Query, Request, UploadFile
 from app.schemas.product import ProductPatch, ProductCreate, ProductPut, ProductResponse
 from app.gateway.product import ProductGateway
 
@@ -12,10 +10,24 @@ async def create_product(name: str = Form(...), price: float = Form(...), catego
     created_product = ProductGateway.create_product(product_create, file)
     return ProductResponse.model_validate(created_product)
 
+@router.get("/hombre", response_model = list[ProductResponse])
+def get_products_hombre() -> list[ProductResponse]:
+    products = ProductGateway.get_products_hombre()
+    return [ProductResponse.model_validate(product) for product in products]
 
-@router.get("/", response_model = list[ProductResponse])
-def get_products() -> list[ProductResponse]:
-    products = ProductGateway.get_products()
+@router.get("/mujer", response_model = list[ProductResponse])
+def get_products_mujer() -> list[ProductResponse]:
+    products = ProductGateway.get_products_mujer()
+    return [ProductResponse.model_validate(product) for product in products]
+
+@router.get("/search/hombre", response_model=list[ProductResponse])
+def search_products_men(search: str = Query(default="") ) -> list[ProductResponse]:
+    products = ProductGateway.search_products_men(search)
+    return [ProductResponse.model_validate(product) for product in products]
+
+@router.get("/search/mujer", response_model=list[ProductResponse])
+def search_products_women(search: str = Query(default="") ) -> list[ProductResponse]:
+    products = ProductGateway.search_products_women(search)
     return [ProductResponse.model_validate(product) for product in products]
 
 @router.get("/{product_id}", response_model = ProductResponse)

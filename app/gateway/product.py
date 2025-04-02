@@ -1,5 +1,5 @@
 from sqlite3 import IntegrityError
-from fastapi import HTTPException, UploadFile
+from fastapi import UploadFile
 from app.models.product import Product
 from app.schemas.product import ProductCreate, ProductPatch, ProductPut
 from app.repository.product import ProductRepository
@@ -24,12 +24,33 @@ class ProductGateway:
             raise DatabaseIntegrityException(str(e))
     
     @classmethod
-    def get_products(cls) -> list[Product]:
+    def get_products_hombre(cls) -> list[Product]:
         try:
-            return ProductRepository.get_products()
+            return ProductRepository.get_products_hombre()
         except Exception as e:
             raise InternalServerErrorException(str(e))
-    
+        
+    @classmethod
+    def get_products_mujer(cls) -> list[Product]:
+        try:
+            return ProductRepository.get_products_mujer()
+        except Exception as e:
+            raise InternalServerErrorException(str(e))
+        
+    @classmethod
+    def search_products_men(cls, search: str) -> list[Product]:
+        try:
+            return ProductRepository.search_products_men(search)
+        except Exception as e:
+            raise InternalServerErrorException(str(e))
+        
+    @classmethod
+    def search_products_women(cls, search: str) -> list[Product]:
+        try:
+            return ProductRepository.search_products_women(search)
+        except Exception as e:
+            raise InternalServerErrorException(str(e))
+       
     @classmethod
     def get_product(cls, product_id: int) -> Product:
         return ProductRepository.get_product(product_id)
@@ -67,7 +88,3 @@ class ProductGateway:
                 return ProductRepository.patch_product_image(product_id, image_url)
             except IntegrityError as e:
                 raise DatabaseIntegrityException(str(e))
-        
-    
-        
-  
