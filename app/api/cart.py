@@ -31,6 +31,12 @@ def delete_cart(cart_id: UUID) -> CartResponse:
     delete_cart = CartGateway.delete_cart(cart_id)
     return CartResponse.model_validate(delete_cart)
 
+@router.delete("/{cart_id}/clear", response_model = CartResponse)
+def clear_cart_items(cart_id: UUID) -> CartResponse:
+    clear_cart = CartGateway.clear_cart_items(cart_id)
+    return CartResponse.model_validate(clear_cart)
+
+
 # Endpoints para CartItem
 """ Recuerda, aqui ya no lo aplique pero debes de saber que cuando le pasas un modelo SQLModel con table = True 
     habrá veces que FastApi intente transformar datos complejos como uuid, en la solicitud, y le salga bien antes de hacer la instancia de User

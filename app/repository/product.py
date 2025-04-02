@@ -1,7 +1,6 @@
 from sqlmodel import select
 from app.models.product import Product 
 from app.schemas.product import ProductPatch
-from fastapi import HTTPException
 from app.database import get_session
 from app.exceptions.exceptions import (ProductNameAlreadyExistsException, ProductNotFoundException)
 
@@ -22,12 +21,39 @@ class ProductRepository:
             return product
     
     @staticmethod
-    def get_products() -> list[Product]:
+    def get_products_hombre() -> list[Product]:
         with get_session() as session:
-            query = select(Product)
-            all_users = session.exec(query).all()
-            return all_users
+            query = select(Product).where(Product.category == "Hombre")
+            all_products  = session.exec(query).all()
+            return all_products 
         
+    @staticmethod
+    def get_products_mujer() -> list[Product]:
+        with get_session() as session:
+            query = select(Product).where(Product.category == "Mujer")
+            all_products  = session.exec(query).all()
+            return all_products 
+        
+    @staticmethod
+    def search_products_men(search: str) -> list[Product]:
+          with get_session() as session:  
+            query = select(Product).filter(Product.category == "Hombre")
+            if search and search.strip():
+                query = query.filter(Product.name.ilike(f"%{search}%"))
+            #Como exec, peero sin metadatos?
+            result = session.scalars(query).all()
+            return result
+        
+    @staticmethod
+    def search_products_women(search: str) -> list[Product]:
+        with get_session() as session:  
+            query = select(Product).filter(Product.category == "Mujer")
+            if search and search.strip():
+                query = query.filter(Product.name.ilike(f"%{search}%"))
+            #Como exec, peero sin metadatos?
+            result = session.scalars(query).all()
+            return result
+            
     @staticmethod
     def get_product(product_id: int) -> Product:
         with get_session() as session:

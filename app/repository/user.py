@@ -1,7 +1,6 @@
 from sqlmodel import Session, select
 from app.models.user import User
 from app.schemas.user import UserPatch
-from fastapi import HTTPException
 from uuid import UUID
 from app.database import get_session
 from app.exceptions.exceptions import (EmailAlreadyRegisteredException, UserNotFoundException)

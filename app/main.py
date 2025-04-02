@@ -5,9 +5,8 @@ from app.api.product import router as product_router
 from app.api.cart import router as cart_router
 from app.exceptions.exceptions import(CartAlreadyRegisteredException, CartItemAlreadyRegisteredException, CartItemNotFoundException, CartNotFoundException, CloudinaryUploadException, DatabaseIntegrityException, EmailAlreadyRegisteredException, InternalServerErrorException, ProductNameAlreadyExistsException, ProductNotFoundException, UserNotFoundException)
 from app.exceptions.exceptions_handlers import (cart_already_registered_handler, cart_item_already_registered_handler, cart_item_not_found_handler, cart_not_found_handler, cloudinary_upload_exception_handler, database_integrity_exception_handler, email_already_registered_handler, internal_server_error_exception_handler, product_name_already_exists_handler, product_not_found_handler, user_not_found_handler)
-
+#Permisos.
 from fastapi.middleware.cors import CORSMiddleware
-
 # pip install cloudinary
 import cloudinary
 #pip install python-dotenv

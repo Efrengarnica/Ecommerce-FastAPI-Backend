@@ -1,6 +1,5 @@
 from sqlite3 import IntegrityError
 from uuid import UUID
-from fastapi import HTTPException
 from app.models.cart import Cart, CartItem
 from app.schemas.cart import CartItemPatch
 from app.repository.cart import CartRepository
@@ -26,10 +25,13 @@ class CartGateway:
     def get_cart(cls, cart_id: UUID) -> Cart:
         return CartRepository.get_cart(cart_id)
      
-    
     @classmethod
     def delete_cart(cls, cart_id: UUID) -> Cart:
         return CartRepository.delete_cart(cart_id)
+    
+    @classmethod
+    def clear_cart_items(cls, cart_id: UUID) -> Cart:
+        return CartRepository.clear_cart_items(cart_id)
      
     
     # Métodos para los items del carrito (CartItem)
