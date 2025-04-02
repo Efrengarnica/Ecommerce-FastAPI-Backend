@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import List
 from uuid import UUID, uuid4
+from app.models.product import Product
     
 class Cart(SQLModel, table = True):
     id: UUID = Field(default_factory = uuid4, primary_key = True)
@@ -14,3 +15,4 @@ class CartItem(SQLModel, table = True):
     product_id: int = Field(foreign_key = "product.id")  # Relación con el producto
     quantity: int = Field(default = 1, ge = 0)  # Cantidad mínima de 1 y mayor o igual que cero
     cart: "Cart" = Relationship(back_populates = "items")  # Relación inversa con el carrito
+    product: Product = Relationship()  # Agregamos la relación con el producto
