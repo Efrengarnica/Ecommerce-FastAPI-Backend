@@ -2,6 +2,8 @@ from typing import List
 from uuid import UUID
 from pydantic import BaseModel, Field
 
+from app.schemas.product import ProductResponse
+
 class CartCreate(BaseModel):
     user_id: UUID
     
@@ -10,6 +12,7 @@ class CartItemResponse(BaseModel):
     cart_id: UUID
     product_id: int  
     quantity: int
+    product: ProductResponse | None = None  
     model_config = {
         "from_attributes": True,  
     }
