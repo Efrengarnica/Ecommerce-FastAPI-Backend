@@ -31,9 +31,9 @@ class CartNotFoundException(Exception):
         super().__init__(self.message)
 
 class CartAlreadyRegisteredException(Exception):
-    def __init__(self, cart_id: UUID):
+    def __init__(self, cart_id: UUID, user_id:UUID):
         self.cart_id = cart_id
-        self.message = f"Cart with ID {cart_id} already registered."
+        self.message = f"Cart with ID {cart_id} already registered with User ID {user_id}."
         super().__init__(self.message)
 
 class CartItemNotFoundException(Exception):
@@ -64,4 +64,10 @@ class CloudinaryUploadException(Exception):
     def __init__(self, detail: str):
         self.detail = detail
         self.message = f"Error al subir imagen: {detail}"
+        super().__init__(self.message)
+        
+class InvalidCredentialsException(Exception):
+    def __init__(self, detail: str):
+        self.detail = detail
+        self.message = f"Contraseña incorrecta: {detail}"
         super().__init__(self.message)
