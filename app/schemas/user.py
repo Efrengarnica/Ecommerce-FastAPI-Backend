@@ -33,3 +33,8 @@ class UserPut(BaseModel):
     email: str 
     age: int | None
     password: str
+
+#Para poder buscar el user por medio de su correo y contraseña
+class UserLogin(BaseModel):
+    email: str
+    password: str

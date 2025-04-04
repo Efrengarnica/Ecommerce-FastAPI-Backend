@@ -3,7 +3,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, RedirectResponse, PlainTextResponse, HTMLResponse
 from app.gateway.user import UserGateway
 from app.models.user import User
-from app.schemas.user import UserPatch, UserResponse, UserCreate, UserPut
+from app.schemas.user import UserPatch, UserResponse, UserCreate, UserPut, UserLogin
 
 router = APIRouter()
 
@@ -21,6 +21,14 @@ def get_users() -> list[UserResponse]:
 @router.get("/{user_id}", response_model = UserResponse)
 def get_user(user_id: UUID) -> UserResponse:
     created_user = UserGateway.get_user(user_id)
+    return UserResponse.model_validate(created_user)
+
+#Cuando usas get no es recomendable a pesar de que quieras conseguir datos
+#usarlo para enviar cosas por medio del body, si quieres conseguir algo
+#por medio de datos es usar post, para no enviar datos sensibles en la url.
+@router.post("/login", response_model = UserResponse)
+def get_user_login(user_data:UserLogin) -> UserResponse:
+    created_user = UserGateway.get_user_login(user_data)
     return UserResponse.model_validate(created_user)
 
 @router.delete("/{user_id}", response_model = UserResponse)
