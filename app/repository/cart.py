@@ -1,7 +1,8 @@
+from fastapi.responses import JSONResponse
 from sqlmodel import select
 from uuid import UUID
 from app.models.cart import Cart, CartItem
-from app.schemas.cart import CartItemPatch
+from app.schemas.cart import CartCreate, CartItemPatch
 from app.models.user import User
 from app.models.product import Product
 from sqlalchemy.orm import selectinload
@@ -16,24 +17,28 @@ class CartRepository:
     
     #Repository de Cart
     @staticmethod
-    def create_cart(cart: Cart) -> Cart:
+    def create_cart(cart_create: CartCreate) -> Cart:
         with get_session() as session:
-            # Validar si el cart ya está registrado
-            existing_cart = session.get(Cart, cart.id)
-            if existing_cart:
-                raise CartAlreadyRegisteredException(cart.id)
-            # Validar que el usuario exista
-            existing_user = session.get(User, cart.user_id)
+     
+            existing_user = session.get(User, cart_create.user_id)
             if not existing_user:
-                raise UserNotFoundException(cart.user_id)
-            session.add(cart)
+                raise UserNotFoundException(cart_create.user_id)
+            
+            stmt = select(Cart).where(Cart.user_id == cart_create.user_id)
+            existing_cart = session.exec(stmt).first()
+            if existing_cart:
+                raise CartAlreadyRegisteredException(existing_cart.id, cart_create.user_id)
+            
+            new_cart = Cart(user_id=cart_create.user_id)
+            session.add(new_cart)
             session.commit()
-            session.refresh(cart)
-            # Cargar la relación 'items' y la relación 'product' de cada item de forma ansiosa
+            session.refresh(new_cart)
+            
             stmt = select(Cart).options(
                 selectinload(Cart.items).selectinload(CartItem.product)
-            ).where(Cart.id == cart.id)
+            ).where(Cart.id == new_cart.id)
             cart_all = session.exec(stmt).one_or_none()
+            
             return cart_all
 
     @staticmethod
@@ -44,23 +49,22 @@ class CartRepository:
             return carts
     
     @staticmethod
-    def get_cart(cart_id: UUID) -> Cart:
+    def get_cart(user_id: UUID) -> Cart:
         with get_session() as session:
-            existing_cart = session.get(Cart, cart_id)
-            #Este es el otro apartado que hay que agregar para que se muestren los Items en el carrito, al parecer como solo existe
-            #una relacion "items" y no es un atributo entonces FastAPI no se siente en la necesidad de cargar las relaciones
-            #entonces haces esto para que las cargue, al parecer debe de estar una sessionactiva para que funcione
-            #Recuerda que tambien tienes que agregar cosas en el Model y en el Controller
-            #option le dice que no sera una consukta ordinaria
-            #selectinload le dice que si encuentra la relacion Cart.items la traiga junto con la consulta
-            # CUANDO HACES UNA CONSULTA Y ESTA PRESENTA RELACIONES LAS RELCIONES NO VIENEN EN LA CONSULTA POR DEFECTO 
-            # DEBES DE DECIRLE QUE LAS TRAIGA DE MANERA EXPLICITA.
-            #Verifica que exista el carrito en la base de datos
-            if not existing_cart:
-                raise CartNotFoundException(cart_id)
-            stmt = select(Cart).options(selectinload(Cart.items).selectinload(CartItem.product)).where(Cart.id == cart_id)
-            cart = session.exec(stmt).one_or_none()
-            return cart
+            with get_session() as session:
+                # Buscar el carrito asociado al user_id
+                stmt = select(Cart).options(
+                    selectinload(Cart.items).selectinload(CartItem.product)
+                ).where(Cart.user_id == user_id)  # Ahora se usa user_id en lugar de cart_id
+
+                # Ejecutar la consulta y obtener el carrito
+                cart = session.exec(stmt).one_or_none()
+
+                # Verificar si el carrito existe
+                if not cart:
+                    return JSONResponse(status_code=404, content={"detail": f"No exite carrito con el id_user: {user_id}"})
+
+                return cart
     
     @staticmethod
     def delete_cart(cart_id: UUID) -> Cart:

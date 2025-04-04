@@ -1,16 +1,16 @@
 from sqlite3 import IntegrityError
 from uuid import UUID
 from app.models.cart import Cart, CartItem
-from app.schemas.cart import CartItemPatch
+from app.schemas.cart import CartCreate, CartItemPatch
 from app.repository.cart import CartRepository
 from app.exceptions.exceptions import (DatabaseIntegrityException, InternalServerErrorException)
 
 class CartGateway:
     
     @classmethod
-    def create_cart(cls, cart: Cart) -> Cart:
+    def create_cart(cls, cart_create: CartCreate) -> Cart:
         try:
-            return CartRepository.create_cart(cart)
+            return CartRepository.create_cart(cart_create)
         except IntegrityError as e:
             raise DatabaseIntegrityException(str(e))
 
@@ -22,8 +22,8 @@ class CartGateway:
             raise InternalServerErrorException(str(e))
     
     @classmethod
-    def get_cart(cls, cart_id: UUID) -> Cart:
-        return CartRepository.get_cart(cart_id)
+    def get_cart(cls, user_id: UUID) -> Cart:
+        return CartRepository.get_cart(user_id)
      
     @classmethod
     def delete_cart(cls, cart_id: UUID) -> Cart:
