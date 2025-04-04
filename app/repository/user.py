@@ -1,9 +1,10 @@
+from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
 from app.models.user import User
-from app.schemas.user import UserPatch
+from app.schemas.user import UserLogin, UserPatch
 from uuid import UUID
 from app.database import get_session
-from app.exceptions.exceptions import (EmailAlreadyRegisteredException, UserNotFoundException)
+from app.exceptions.exceptions import (EmailAlreadyRegisteredException, InvalidCredentialsException, UserNotFoundException)
 
 class UserRepository:
     
@@ -37,6 +38,23 @@ class UserRepository:
                 return user
             #Verificar que el usuario exista
             raise UserNotFoundException(user_id)
+    
+    @staticmethod
+    def get_user_login(user_data: UserLogin) -> User:
+        with get_session() as session:
+            # Buscar el usuario por email
+            query = select(User).where(User.email == user_data.email)
+            user = session.exec(query).first()
+
+            # Si no se encuentra el usuario, se lanza una excepción
+            if not user:
+                raise JSONResponse(status_code=404, content={"detail": "No hay usuario registrado con ese email."})
+            
+            # Verificar que la contraseña proporcionada sea la misma
+            if user.password != user_data.password:
+                raise InvalidCredentialsException("Las credenciales proporcionadas no coinciden.")
+            
+            return user
     
     @staticmethod
     def delete_user(user_id: UUID) -> User:

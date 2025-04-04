@@ -12,8 +12,7 @@ router = APIRouter()
 # Endpoints para Cart
 @router.post("/", response_model = CartResponse)
 def create_cart(cart_create: CartCreate) -> CartResponse:
-    cart_entity = Cart(**cart_create.model_dump())
-    created_cart = CartGateway.create_cart(cart_entity)
+    created_cart = CartGateway.create_cart(cart_create)
     return CartResponse.model_validate(created_cart)
 
 @router.get("/", response_model = list[CartResponse])
@@ -21,9 +20,9 @@ def get_carts() -> List[CartResponse]:
     carts = CartGateway.get_carts()
     return [CartResponse.model_validate(cart) for cart in carts]
 
-@router.get("/{cart_id}", response_model = CartResponse)
-def get_cart(cart_id: UUID) -> CartResponse:
-    created_cart = CartGateway.get_cart(cart_id)
+@router.get("/{user_id}", response_model = CartResponse)
+def get_cart(user_id: UUID) -> CartResponse:
+    created_cart = CartGateway.get_cart(user_id)
     return CartResponse.model_validate(created_cart)
 
 @router.delete("/{cart_id}", response_model = CartResponse)
