@@ -7,6 +7,8 @@ services:
        args:
          requirements: requirements/reqs.txt
      container_name: contenedor_ecommerce_app
+     env_file:
+      - .env
      environment:
        # use in code
        - DEBUG=True
