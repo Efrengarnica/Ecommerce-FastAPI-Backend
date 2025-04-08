@@ -1,14 +1,14 @@
 from fastapi.responses import JSONResponse
 from sqlmodel import select
 from uuid import UUID
-from app.models.cart import Cart, CartItem
-from app.schemas.cart import CartCreate, CartItemPatch
-from app.models.user import User
-from app.models.product import Product
+from models.cart import Cart, CartItem
+from schemas.cart import CartCreate, CartItemPatch
+from models.user import User
+from models.product import Product
 from sqlalchemy.orm import selectinload
-from app.database import get_session
-from app.exceptions.exceptions import (CartAlreadyRegisteredException, CartItemAlreadyRegisteredException, CartItemNotFoundException, CartNotFoundException, ProductNotFoundException, UserNotFoundException)
-from app.schemas.product import ProductResponse
+from database import get_session
+from exceptions.exceptions import (CartAlreadyRegisteredException, CartItemAlreadyRegisteredException, CartItemNotFoundException, CartNotFoundException, ProductNotFoundException, UserNotFoundException)
+from schemas.product import ProductResponse
 
 #Los repository son los que se conectan mediante una session a la base de datos SQLITE, DEJA RECUERDO DE DONDE VIENE SQLLITE
 #En este repository esta el de Cart y CartItem, los hice aqui mismo, solo tener cuidado de no usar los mismos nombres en las funciones

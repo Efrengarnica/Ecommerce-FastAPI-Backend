@@ -1,9 +1,9 @@
 from sqlite3 import IntegrityError
 from uuid import UUID
-from app.models.user import User
-from app.schemas.user import UserLogin, UserPatch
-from app.repository.user import UserRepository
-from app.exceptions.exceptions import (DatabaseIntegrityException, InternalServerErrorException)
+from models.user import User
+from schemas.user import UserLogin, UserPatch
+from repository.user import UserRepository
+from exceptions.exceptions import (DatabaseIntegrityException, InternalServerErrorException)
 
 class UserGateway:
     

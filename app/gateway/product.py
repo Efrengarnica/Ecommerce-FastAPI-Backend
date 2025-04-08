@@ -1,10 +1,10 @@
 from sqlite3 import IntegrityError
 from fastapi import UploadFile
-from app.models.product import Product
-from app.schemas.product import ProductCreate, ProductPatch, ProductPut
-from app.repository.product import ProductRepository
-from app.exceptions.exceptions import (CloudinaryUploadException, DatabaseIntegrityException, InternalServerErrorException)
-from app.services.cloudinary_service import upload_image_to_cloudinary
+from models.product import Product
+from schemas.product import ProductCreate, ProductPatch, ProductPut
+from repository.product import ProductRepository
+from exceptions.exceptions import (CloudinaryUploadException, DatabaseIntegrityException, InternalServerErrorException)
+from services.cloudinary_service import upload_image_to_cloudinary
 
 class ProductGateway:
     

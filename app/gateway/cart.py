@@ -1,9 +1,9 @@
 from sqlite3 import IntegrityError
 from uuid import UUID
-from app.models.cart import Cart, CartItem
-from app.schemas.cart import CartCreate, CartItemPatch
-from app.repository.cart import CartRepository
-from app.exceptions.exceptions import (DatabaseIntegrityException, InternalServerErrorException)
+from models.cart import Cart, CartItem
+from schemas.cart import CartCreate, CartItemPatch
+from repository.cart import CartRepository
+from exceptions.exceptions import (DatabaseIntegrityException, InternalServerErrorException)
 
 class CartGateway:
     

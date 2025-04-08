@@ -1,6 +1,6 @@
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from .exceptions import (CloudinaryUploadException, InvalidCredentialsException, UserNotFoundException, EmailAlreadyRegisteredException, ProductNotFoundException, ProductNameAlreadyExistsException, CartNotFoundException, CartAlreadyRegisteredException, CartItemNotFoundException, CartItemAlreadyRegisteredException, DatabaseIntegrityException, InternalServerErrorException )
+from exceptions import (CloudinaryUploadException, InvalidCredentialsException, UserNotFoundException, EmailAlreadyRegisteredException, ProductNotFoundException, ProductNameAlreadyExistsException, CartNotFoundException, CartAlreadyRegisteredException, CartItemNotFoundException, CartItemAlreadyRegisteredException, DatabaseIntegrityException, InternalServerErrorException )
 
 async def user_not_found_handler(request: Request, exc: UserNotFoundException):
     return JSONResponse(status_code=404, content={"detail": exc.message})

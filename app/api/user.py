@@ -1,9 +1,9 @@
 from uuid import UUID
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, RedirectResponse, PlainTextResponse, HTMLResponse
-from app.gateway.user import UserGateway
-from app.models.user import User
-from app.schemas.user import UserPatch, UserResponse, UserCreate, UserPut, UserLogin
+from gateway.user import UserGateway
+from models.user import User
+from schemas.user import UserPatch, UserResponse, UserCreate, UserPut, UserLogin
 
 router = APIRouter()
 
