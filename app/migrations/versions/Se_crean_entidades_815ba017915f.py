@@ -1,8 +1,8 @@
-"""empty message
+"""mensaje de la migración
 
-Revision ID: a52e2c75c469
+Revision ID: 815ba017915f
 Revises: 
-Create Date: 2025-04-05 06:20:46.448668
+Create Date: 2025-04-08 04:33:01.746300
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlmodel
 
 
 # revision identifiers, used by Alembic.
-revision = 'a52e2c75c469'
+revision = '815ba017915f'
 down_revision = None
 branch_labels = None
 depends_on = None

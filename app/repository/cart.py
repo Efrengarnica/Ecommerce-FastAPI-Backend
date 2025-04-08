@@ -63,6 +63,9 @@ class CartRepository:
                 # Verificar si el carrito existe
                 if not cart:
                     return JSONResponse(status_code=404, content={"detail": f"No exite carrito con el id_user: {user_id}"})
+                
+                # Ordenar los items del carrito según created_at
+                cart.items.sort(key=lambda item: item.created_at)
 
                 return cart
     
