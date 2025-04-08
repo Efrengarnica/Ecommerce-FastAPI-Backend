@@ -6,19 +6,22 @@
 from typing import Generator
 from contextlib import contextmanager
 from sqlmodel import create_engine, Session, SQLModel
-from app.models.user import User
-from app.models.product import Product
-from app.models.cart import Cart, CartItem
+from models.user import User
+from models.product import Product
+from models.cart import Cart, CartItem
+
+from settings.base import DB_PORT, DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
 
 #Base de datos sqlLite que es un doc en donde se guardan mis datos.
-DATABASE_URL = "sqlite:///database.db"
-engine = create_engine(DATABASE_URL, echo=True)  # `echo=True` muestra las consultas SQL en consola
+#DATABASE_URL = "sqlite:///database.db"
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+engine = create_engine(DATABASE_URL, echo=False)  # `echo=True` muestra las consultas SQL en consola
 
 # Crear la tabla en la base de datos
-def create_db():
-    SQLModel.metadata.create_all(engine)
+#def create_db():
+   # SQLModel.metadata.create_all(engine)
 #Funcion que cuando se levanta el servidor se ejecuta, esto busca todos los modelos que cumplan con table = True y los agrega a la base de datos 
-create_db()
+#create_db()
 
 # Dependencia para obtener la sesión de la base de datos
 #Por lo que entiendo esto genera una sesion, pero la va a estar manejando FastAPI y cada que termine de ocuparla la cierra en automático

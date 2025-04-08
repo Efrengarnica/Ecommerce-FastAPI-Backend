@@ -1,10 +1,10 @@
 from fastapi.responses import JSONResponse
 from sqlmodel import Session, select
-from app.models.user import User
-from app.schemas.user import UserLogin, UserPatch
+from models.user import User
+from schemas.user import UserLogin, UserPatch
 from uuid import UUID
-from app.database import get_session
-from app.exceptions.exceptions import (EmailAlreadyRegisteredException, InvalidCredentialsException, UserNotFoundException)
+from database import get_session
+from exceptions.exceptions import (EmailAlreadyRegisteredException, InvalidCredentialsException, UserNotFoundException)
 
 class UserRepository:
     

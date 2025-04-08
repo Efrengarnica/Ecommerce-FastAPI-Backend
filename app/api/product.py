@@ -1,6 +1,6 @@
 from fastapi import APIRouter,File, Form, Query, Request, UploadFile
-from app.schemas.product import ProductPatch, ProductCreate, ProductPut, ProductResponse
-from app.gateway.product import ProductGateway
+from schemas.product import ProductPatch, ProductCreate, ProductPut, ProductResponse
+from gateway.product import ProductGateway
 
 router = APIRouter()
     

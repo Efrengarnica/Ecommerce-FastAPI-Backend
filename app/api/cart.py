@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request
 from uuid import UUID
 from typing import List
-from app.models.cart import Cart, CartItem
-from app.schemas.cart import CartCreate, CartResponse, CartItemCreate, CartItemResponse, CartItemPatch
-from app.gateway.cart import CartGateway
+from models.cart import Cart, CartItem
+from schemas.cart import CartCreate, CartResponse, CartItemCreate, CartItemResponse, CartItemPatch
+from gateway.cart import CartGateway
 
 #Importante ya que tengo distintas entidades entonces tengo que tener endpoints distintos.
 #Esto conecta los controllers con la app prinicpal de FastApi

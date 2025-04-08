@@ -1,8 +1,8 @@
 from sqlmodel import select
-from app.models.product import Product 
-from app.schemas.product import ProductPatch
-from app.database import get_session
-from app.exceptions.exceptions import (ProductNameAlreadyExistsException, ProductNotFoundException)
+from models.product import Product 
+from schemas.product import ProductPatch
+from database import get_session
+from exceptions.exceptions import (ProductNameAlreadyExistsException, ProductNotFoundException)
 
 class ProductRepository:
     
