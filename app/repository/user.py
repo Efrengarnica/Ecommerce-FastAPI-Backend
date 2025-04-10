@@ -1,4 +1,4 @@
-from fastapi.responses import JSONResponse
+from fastapi import HTTPException
 from sqlmodel import Session, select
 from models.user import User
 from schemas.user import UserLogin, UserPatch
@@ -47,8 +47,9 @@ class UserRepository:
             user = session.exec(query).first()
 
             # Si no se encuentra el usuario, se lanza una excepción
+            ##Checa esto ya que no era JSONresponse era HTTPException
             if not user:
-                raise JSONResponse(status_code=404, content={"detail": "No hay usuario registrado con ese email."})
+                raise HTTPException(status_code=404, detail="No hay usuario registrado con ese email.")
             
             # Verificar que la contraseña proporcionada sea la misma
             if user.password != user_data.password:
