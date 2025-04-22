@@ -9,105 +9,107 @@ from exceptions.exceptions import (EmailAlreadyRegisteredException, InvalidCrede
 class UserRepository:
     
     @staticmethod
-    def create_user(user: User) -> User:
-        with get_session() as session:
-            statement = select(User).where(User.email == user.email)
-            existing_user = session.exec(statement).first()
-            # Validación de si el email ya está registrado
+    async def create_user(user: User) -> User:
+        async with get_session() as session:  # AsyncSession
+            # 1. Comprobamos si ya existe
+            stmt = select(User).where(User.email == user.email)
+            result = await session.execute(stmt)
+            existing_user = result.scalars().first()
             if existing_user:
                 raise EmailAlreadyRegisteredException(user.email)
-            # Agregar el nuevo usuario
+            # 2. Insertamos
             session.add(user)
-            session.commit()
-            session.refresh(user)
+            await session.commit()
+            await session.refresh(user)
+            return user
+
+    @staticmethod
+    async def get_users() -> list[User]:
+        async with get_session() as session:
+            # Ejecutar y devolver lista de Users
+            result = await session.execute(select(User))
+            return result.scalars().all()
+
+    @staticmethod
+    async def get_user(user_id: UUID) -> User:
+        async with get_session() as session:
+            stmt = select(User).where(User.id == user_id)
+            result = await session.execute(stmt)
+            user = result.scalars().first()
+            if not user:
+                raise UserNotFoundException(user_id)
             return user
     
     @staticmethod
-    def get_users() -> list[User]:
-        with get_session() as session:
-            query = select(User)
-            all_users = session.exec(select(User)).all()
-            return all_users
+    async def get_user_login(user_data: UserLogin) -> User:
+        async with get_session() as session:
+            stmt = select(User).where(User.email == user_data.email)
+            result = await session.execute(stmt)
+            user = result.scalars().first()
 
-    @staticmethod
-    def get_user(user_id: UUID) -> User:
-        with get_session() as session:
-            query = select(User).where(User.id == user_id)
-            user = session.exec(query).first()
-            if user:
-                return user
-            #Verificar que el usuario exista
-            raise UserNotFoundException(user_id)
-    
-    @staticmethod
-    def get_user_login(user_data: UserLogin) -> User:
-        with get_session() as session:
-            # Buscar el usuario por email
-            query = select(User).where(User.email == user_data.email)
-            user = session.exec(query).first()
-
-            # Si no se encuentra el usuario, se lanza una excepción
-            ##Checa esto ya que no era JSONresponse era HTTPException
             if not user:
                 raise HTTPException(status_code=404, detail="No hay usuario registrado con ese email.")
-            
-            # Verificar que la contraseña proporcionada sea la misma
+
             if user.password != user_data.password:
                 raise InvalidCredentialsException("Las credenciales proporcionadas no coinciden.")
-            
             return user
     
     @staticmethod
-    def delete_user(user_id: UUID) -> User:
-        with get_session() as session:
-            user = session.get(User, user_id)
-            #Verificar que el usuario exista
-            if user is None:
+    async def delete_user(user_id: UUID) -> User:
+        async with get_session() as session:
+            user = await session.get(User, user_id)
+            if not user:
                 raise UserNotFoundException(user_id)
-            session.delete(user)
-            session.commit()
+            await session.delete(user)
+            await session.commit()
             return user
-
+        
     @staticmethod
-    def update_user(user: User) -> User:
-        with get_session() as session:
-            # Buscar el usuario por ID en la base de datos
-            user_to_update = session.get(User, user.id)
-            #Verificar que el usuario existe
-            if user_to_update is None:
+    async def update_user(user: User) -> User:
+        async with get_session() as session:
+            # Buscamos la entidad existente
+            existing = await session.get(User, user.id)
+            if not existing:
                 raise UserNotFoundException(user.id)
-            # Actualizar los campos del usuario
-            user_to_update.name = user.name
-            user_to_update.email = user.email
-            user_to_update.age = user.age
-            user_to_update.password = user.password 
-            # Confirmar la actualización en la base de datos
-            session.commit()
-            # Refrescar el usuario para obtener los datos actualizados
-            session.refresh(user_to_update)
-            return user_to_update
+
+            # Sobrescribimos campos
+            existing.name = user.name
+            existing.email = user.email
+            existing.age = user.age
+            existing.password = user.password
+
+            await session.commit()
+            await session.refresh(existing)
+            return existing
     
     @staticmethod
-    def patch_user(user_id: UUID, user_patch: UserPatch) -> User:
-        with get_session() as session:
-            user_to_update = session.get(User, user_id)
-            #Verificar que el usuario exista
-            if user_to_update is None:
+    async def patch_user(user_id: UUID, user_patch: UserPatch) -> User:
+        async with get_session() as session:
+            existing = await session.get(User, user_id)
+            if not existing:
                 raise UserNotFoundException(user_id)
-            # Verificar si el email que se quiere asignar ya está en uso
+
+            # Si cambian el email, validamos unicidad
             if user_patch.email:
-                existing_user = session.exec(select(User).where(User.email == user_patch.email)).first()
-                if existing_user and existing_user.id != user_id:  # Verificar si el email pertenece a otro usuario
+                stmt = select(User).where(User.email == user_patch.email)
+                result = await session.execute(stmt)
+                conflict = result.scalars().first()
+                if conflict and conflict.id != user_id:
                     raise EmailAlreadyRegisteredException(user_patch.email)
-            # Actualizar solo los campos proporcionados en user_patch
-            #Cuando usas or en python aqui indica que si hay 2 true se queda con el primero
-            user_to_update.name = user_patch.name or user_to_update.name
-            user_to_update.email = user_patch.email or user_to_update.email
-            user_to_update.age = user_patch.age or user_to_update.age
-            user_to_update.password = user_patch.password or user_to_update.password
-            session.commit()
-            session.refresh(user_to_update)
-            return user_to_update
+
+            # Actualizamos solo los campos proporcionados
+            if user_patch.name is not None:
+                existing.name = user_patch.name
+            if user_patch.email is not None:
+                existing.email = user_patch.email
+            if user_patch.age is not None:
+                existing.age = user_patch.age
+            if user_patch.password is not None:
+                existing.password = user_patch.password
+
+            await session.commit()
+            await session.refresh(existing)
+            return existing
     
     """ 
         Cosas que puedo llegar a hacer son session
