@@ -68,6 +68,13 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
+    # 4) Pasamos de ASÍNCRONO a SÍNCRONO solo para Alembic:
+    async_url = config.get_main_option("sqlalchemy.url")
+    sync_url = async_url.replace("+asyncpg", "")  # elimina +asyncpg
+    config.set_main_option("sqlalchemy.url", sync_url)
+    # Esto fuerza a Alembic a usar un engine basado en create_engine()
+    # en lugar de create_async_engine(), evitando el error MissingGreenlet.
+    
     connectable = engine_from_config(
         config.get_section(config.config_ini_section),
         prefix='sqlalchemy.',
