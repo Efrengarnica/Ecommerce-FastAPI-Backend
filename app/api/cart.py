@@ -11,28 +11,28 @@ router = APIRouter()
 
 # Endpoints para Cart
 @router.post("/", response_model = CartResponse)
-def create_cart(cart_create: CartCreate) -> CartResponse:
-    created_cart = CartGateway.create_cart(cart_create)
+async def create_cart(cart_create: CartCreate) -> CartResponse:
+    created_cart = await CartGateway.create_cart(cart_create)
     return CartResponse.model_validate(created_cart)
 
 @router.get("/", response_model = list[CartResponse])
-def get_carts() -> List[CartResponse]:
-    carts = CartGateway.get_carts()
+async def get_carts() -> List[CartResponse]:
+    carts = await CartGateway.get_carts()
     return [CartResponse.model_validate(cart) for cart in carts]
 
 @router.get("/{user_id}", response_model = CartResponse)
-def get_cart(user_id: UUID) -> CartResponse:
-    created_cart = CartGateway.get_cart(user_id)
+async def get_cart(user_id: UUID) -> CartResponse:
+    created_cart = await CartGateway.get_cart(user_id)
     return CartResponse.model_validate(created_cart)
 
 @router.delete("/{cart_id}", response_model = CartResponse)
-def delete_cart(cart_id: UUID) -> CartResponse:
-    delete_cart = CartGateway.delete_cart(cart_id)
+async def delete_cart(cart_id: UUID) -> CartResponse:
+    delete_cart = await CartGateway.delete_cart(cart_id)
     return CartResponse.model_validate(delete_cart)
 
 @router.delete("/{cart_id}/clear", response_model = CartResponse)
-def clear_cart_items(cart_id: UUID) -> CartResponse:
-    clear_cart = CartGateway.clear_cart_items(cart_id)
+async def clear_cart_items(cart_id: UUID) -> CartResponse:
+    clear_cart = await CartGateway.clear_cart_items(cart_id)
     return CartResponse.model_validate(clear_cart)
 
 
@@ -45,18 +45,18 @@ def clear_cart_items(cart_id: UUID) -> CartResponse:
     Aqui en este POST lo aplique así.
 """
 @router.post("/items/", response_model = CartItemResponse)
-def add_item_to_cart(cart_item_create: CartItemCreate) -> CartItemResponse:
+async def add_item_to_cart(cart_item_create: CartItemCreate) -> CartItemResponse:
     cart_item_entity = CartItem(**cart_item_create.model_dump())
-    created_cart_item = CartGateway.add_item_to_cart(cart_item_entity)
+    created_cart_item = await CartGateway.add_item_to_cart(cart_item_entity)
     return CartItemResponse.model_validate(created_cart_item)
   
 @router.delete("/items/{cart_item_id}", response_model = CartItemResponse)
-def delete_cart_item(cart_item_id: UUID) -> CartItemResponse:
-    eliminated_cart_item = CartGateway.delete_cart_item(cart_item_id)
+async def delete_cart_item(cart_item_id: UUID) -> CartItemResponse:
+    eliminated_cart_item = await CartGateway.delete_cart_item(cart_item_id)
     return CartItemResponse.model_validate(eliminated_cart_item)
 
 @router.patch("/items/{cart_item_id}", response_model = CartItemResponse)
 async def patch_cart_item(cart_item_id: UUID, request: Request ) -> CartItemResponse:
     data = await request.json()
-    created_cart_item = CartGateway.patch_cart_item(cart_item_id, CartItemPatch(**data))
+    created_cart_item = await CartGateway.patch_cart_item(cart_item_id, CartItemPatch(**data))
     return CartItemResponse.model_validate(created_cart_item)

@@ -8,41 +8,41 @@ from exceptions.exceptions import (DatabaseIntegrityException, InternalServerErr
 class UserGateway:
     
     @classmethod
-    def create_user(cls, user: User) -> User:
+    async def create_user(cls, user: User) -> User:
         try:
-            return UserRepository.create_user(user)
+            return await UserRepository.create_user(user)
         except IntegrityError as e:
             raise DatabaseIntegrityException(str(e))
         
     @classmethod
-    def get_users(cls) -> list[User]:
+    async def get_users(cls) -> list[User]:
         try:
-            return UserRepository.get_users()
+            return await UserRepository.get_users()
         except Exception as e:
             raise InternalServerErrorException(str(e))
     
     @classmethod
-    def get_user(cls, user_id: UUID) -> User:
-        return UserRepository.get_user(user_id)
+    async def get_user(cls, user_id: UUID) -> User:
+        return await UserRepository.get_user(user_id)
     
     @classmethod
-    def get_user_login(cls, user_data: UserLogin) -> User:
-        return UserRepository.get_user_login(user_data)
+    async def get_user_login(cls, user_data: UserLogin) -> User:
+        return await UserRepository.get_user_login(user_data)
    
     @classmethod
-    def delete_user(cls, user_id: UUID) -> User:
-        return UserRepository.delete_user(user_id)
+    async def delete_user(cls, user_id: UUID) -> User:
+        return await UserRepository.delete_user(user_id)
     
     @classmethod
-    def update_user(cls, user: User) -> User:
+    async def update_user(cls, user: User) -> User:
         try:
-            return UserRepository.update_user(user)
+            return await UserRepository.update_user(user)
         except IntegrityError as e:
             raise DatabaseIntegrityException(str(e))
 
     @classmethod
-    def patch_user(cls, user_id: UUID, user_patch: UserPatch) -> User:
+    async def patch_user(cls, user_id: UUID, user_patch: UserPatch) -> User:
         try:
-            return UserRepository.patch_user(user_id, user_patch)
+            return await UserRepository.patch_user(user_id, user_patch)
         except IntegrityError as e:
             raise DatabaseIntegrityException(str(e))
