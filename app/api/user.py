@@ -3,16 +3,21 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, RedirectResponse, PlainTextResponse, HTMLResponse
 from gateway.user import UserGateway
 from models.user import User
-from schemas.user import UserPatch, UserResponse, UserCreate, UserPut, UserLogin
+from schemas.user import UserPassword, UserPatch, UserResponse, UserCreate, UserPut, UserLogin
 
 router = APIRouter()
 
 @router.post("/", response_model = UserResponse)
 async def create_user(user_create: UserCreate) -> UserResponse:
-    user_entity = User(**user_create.model_dump())
-    created_user = await UserGateway.create_user(user_entity)
+    #user_entity = User(**user_create.model_dump())
+    created_user = await UserGateway.create_user(user_create)
     return UserResponse.model_validate(created_user)
 
+@router.post("/andCart", response_model = UserResponse)
+async def create_user_and_cart(user_create: UserCreate) -> UserResponse:
+    created_user = await UserGateway.create_user_and_cart(user_create)
+    return UserResponse.model_validate(created_user)
+    
 @router.get("/", response_model=list[UserResponse])
 async def get_users() -> list[UserResponse]:
     users = await UserGateway.get_users()
@@ -42,7 +47,12 @@ async def update_user(user_create: UserPut) -> UserResponse:
     created_user = await UserGateway.update_user(user_entity)
     return UserResponse.model_validate(created_user)
 
-@router.patch("/{user_id}")
+@router.patch("/{user_id}/changePassword", response_model = UserResponse)
+async def patch_user_password(user_data: UserPassword, user_id: UUID) -> UserResponse:
+    created_user = await UserGateway.patch_user_password(user_id, user_data)
+    return UserResponse.model_validate(created_user)
+
+@router.patch("/{user_id}", response_model = UserResponse)
 async def patch_user(request: Request, user_id: UUID) -> UserResponse:
     data = await request.json()
     created_user = await UserGateway.patch_user(user_id, UserPatch(**data))
