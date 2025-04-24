@@ -1,10 +1,11 @@
 from fastapi import HTTPException
 from sqlmodel import Session, select
+from models.cart import Cart
 from models.user import User
-from schemas.user import UserLogin, UserPatch
+from schemas.user import UserLogin, UserPassword, UserPatch
 from uuid import UUID
 from database import get_session
-from exceptions.exceptions import (EmailAlreadyRegisteredException, InvalidCredentialsException, UserNotFoundException)
+from exceptions.exceptions import (CartAlreadyRegisteredException, EmailAlreadyRegisteredException, InvalidCredentialsException, UserNotFoundException)
 
 class UserRepository:
     
@@ -22,7 +23,42 @@ class UserRepository:
             await session.commit()
             await session.refresh(user)
             return user
+    
+    #Me sirve al momento de registrar un usuario y poder estar atento a los 2 tipos de error, el error al crear un usuario y al crear un cart
+    #si llegara a usar los 2 por separados podria llegar a crearse un user sin cart, es por eso que ocupo esto.
+    @staticmethod
+    async def create_user_and_cart(user: User) -> User:
+        async with get_session() as session:
+            
+            # Apartado que verifica lo del User
+            
+            #Verifico que no haya un user con ese email.
+            stmt = select(User).where(User.email == user.email)
+            result = await session.execute(stmt)
+            existing_user = result.scalars().first()
+            if existing_user:
+                raise EmailAlreadyRegisteredException(user.email)
+            
+            #Apartado que verifica lo de Cart
+            
+            #Verifico que no exista otro cart asociado a ese id.
+            stmt = select(Cart).where(Cart.user_id == user.id)
+            result = await session.execute(stmt)
+            existing_cart = result.scalars().first()
+            if existing_cart:
+                raise CartAlreadyRegisteredException(existing_cart.id, user.id)
 
+            #Una vez verificado se agrega el user y el cart
+            new_cart = Cart(user_id = user.id)
+            session.add(user)
+            await session.commit()
+            await session.refresh(user)
+            session.add(new_cart)
+            await session.commit()
+            await session.refresh(new_cart)
+            
+            return user
+            
     @staticmethod
     async def get_users() -> list[User]:
         async with get_session() as session:
@@ -49,9 +85,8 @@ class UserRepository:
 
             if not user:
                 raise HTTPException(status_code=404, detail="No hay usuario registrado con ese email.")
-
-            if user.password != user_data.password:
-                raise InvalidCredentialsException("Las credenciales proporcionadas no coinciden.")
+            #if user.password != user_data.password:
+             #   raise InvalidCredentialsException("Las credenciales proporcionadas no coinciden.")
             return user
     
     @staticmethod
@@ -81,7 +116,17 @@ class UserRepository:
             await session.commit()
             await session.refresh(existing)
             return existing
-    
+        
+    @staticmethod
+    async def patch_user_password(user_id: UUID, user_data: UserPassword) -> User:
+        async with get_session() as session:
+            #No se verifica que exista ya que ya se verifica en la capa de gateway cuando se consigue por get_user
+            user = await session.get(User, user_id)
+            user.password = user_data.passwordNuevo
+            await session.commit()
+            await session.refresh(user)
+            return user
+            
     @staticmethod
     async def patch_user(user_id: UUID, user_patch: UserPatch) -> User:
         async with get_session() as session:
