@@ -5,6 +5,7 @@ from models.user import User
 from schemas.user import UserCreate, UserLogin, UserPassword, UserPatch
 from repository.user import UserRepository
 from exceptions.exceptions import (DatabaseIntegrityException, InternalServerErrorException, InvalidCredentialsException)
+from starlette.concurrency import run_in_threadpool
 
 class UserGateway:
     # Crea un contexto para poder hashear la contraseña, se usa bcrypt.
@@ -12,16 +13,30 @@ class UserGateway:
  
     #Método para hashear la contraseña.
     @classmethod
-    def hash_password(cls, password: str) -> str:
+    async def hash_password(cls, password: str) -> str:
         """
         Hash the password using bcrypt.
         """
-        return cls.pwd_context.hash(password)
+        #return cls.pwd_context.hash(password)
+        return await run_in_threadpool(
+                cls.pwd_context.hash,
+                password
+        )
+    @classmethod
+    async def verify_password(cls, plain: str, hashed: str) -> bool:
+        """
+        Verify the password in a threadpool to avoid blocking the event loop.
+        """
+        return await run_in_threadpool(
+            cls.pwd_context.verify,
+            plain,
+            hashed
+        )
     
     @classmethod
     async def create_user(cls, user_create: UserCreate) -> User:
         try:
-            hashed_password = cls.hash_password(user_create.password)
+            hashed_password = await cls.hash_password(user_create.password)
             #Por como lo definí, cuando lo creas sin role el role es client.
             # No validamos eso lo hace baseModel cuando se crea el User, si se le da un role que no existe en model User entonces no se crea el user.
             user = User(
@@ -38,7 +53,7 @@ class UserGateway:
     @classmethod
     async def create_user_and_cart(cls, user_create:UserCreate) -> User:
         try:
-            hashed_password = cls.hash_password(user_create.password)
+            hashed_password = await cls.hash_password(user_create.password)
             #Por como lo definí, cuando lo creas sin role el role es client.
             # No validamos eso lo hace baseModel cuando se crea el User, si se le da un role que no existe en model User entonces no se crea el user.
             user = User(
@@ -59,7 +74,7 @@ class UserGateway:
         user = await UserRepository.get_user_login(user_data)
         
         # Verify the password
-        if not cls.pwd_context.verify(user_data.password, user.password):
+        if not await cls.verify_password(user_data.password, user.password):
             raise InvalidCredentialsException("Las credenciales proporcionadas no coinciden.")
         
         return user
@@ -98,11 +113,11 @@ class UserGateway:
         user = await UserRepository.get_user(user_id)
         
         # Verificar la contraseña que nos manda con la de la bd
-        if not cls.pwd_context.verify(user_data.passwordActual, user.password):
+        if not await cls.verify_password(user_data.passwordActual, user.password):
             raise InvalidCredentialsException("Las credenciales proporcionadas no coinciden.")
         
         #Hasheamos la contraseña nueva.
-        hashed_password = cls.hash_password(user_data.passwordNuevo)
+        hashed_password = await cls.hash_password(user_data.passwordNuevo)
         
         #Creamos la nueva data
         user_data_new = UserPassword(
