@@ -13,6 +13,7 @@ services:
        # use in code
        - DEBUG=True
        - PYTHONUNBUFFERED=1
+       - JWT_SECRET_KEY=${JWT_SECRET_KEY} #Esto es para que mi contenedor reconozca mi varible de ambiente.
      volumes:
        - .:/app:delegated
      ports:
