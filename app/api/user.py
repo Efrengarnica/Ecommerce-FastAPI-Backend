@@ -2,6 +2,7 @@ from uuid import UUID
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, RedirectResponse, PlainTextResponse, HTMLResponse
 from gateway.user import UserGateway
+from gateway.authorization import AuthorizationGateway
 from models.user import User
 from schemas.user import UserPassword, UserPatch, UserResponse, UserCreate, UserPut, UserLogin
 
@@ -35,6 +36,23 @@ async def get_user(user_id: UUID) -> UserResponse:
 async def get_user_login(user_data:UserLogin) -> UserResponse:
     created_user = await UserGateway.get_user_login(user_data)
     return UserResponse.model_validate(created_user)
+
+# Aqui no voy a modificar aún mi manera de hacer login hasta que sepa:
+# Como implementar de manera completa lo del token, cookie y verificacion del token.
+# Por ahora solo me limito a escribir endpoint que remplzara al login de arriba como método de inicio de sesión.
+@router.post("/login/token")
+async def get_user_login_by_token(user_data:UserLogin):
+    """
+        Create tokens for authentication
+    """
+    #Hay 2 maneras si usas cookies, regresar la cookie y el user o solo la cookie, me decanto solo por regresar la cookie y depsues pedir los datos.
+    
+    #Esta es una manera provisional ya que tendria aqui en este router que implementar la forma de que se envie la cookie con el token.
+    # y regrese solo un mensaje de exito o algo así.
+    # Está forma es para yo guardar el token como yo decia, pero es vulnerable el token. 
+    return await AuthorizationGateway.token(user_data)
+    
+    
 
 @router.delete("/{user_id}", response_model = UserResponse)
 async def delete_user(user_id: UUID) -> UserResponse:
