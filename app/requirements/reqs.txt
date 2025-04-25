@@ -1,3 +1,7 @@
+# Cada vez que agregas algo aquí debes de detener, reconstruir solo el contenedor de la app y levantar de nuevo.
+# Para que el contenedor sepa, si intalas algo directamente dentro del contenedor con docker exec -it nombre pip install eso lo instala 
+# momentaneamente para que no tengas problemas pero si lo haces de esa manera debes de agregarlo también aquí ya que cuando detienes el contenedor
+# y lo levantas ya no lo tendrás, entonces por eso se pone aqui para que si lo paras vuelvas a recontruir y levantar y lo tengas.
 fastapi==0.115.11
 uvicorn==0.34.0
 sqlmodel==0.0.24
@@ -8,3 +12,19 @@ python-dotenv
 alembic==1.13.1
 psycopg2-binary==2.9.7
 passlib==1.7.4
+# Me ayuda a poner interactuar con los archivos .py de mi app, útil para probar los métodos sin hacer peticiones.
+# ten en cuenta que si ejecuto un método si se aplica a la base de datos.
+ipython==9.1.0 
+# Libreria que me ayuda a poder generar tokens. 
+pyjwt==2.10.1
+
+#Comandos útiles:
+# Estos comandos se hacen dentro de la carpeta que tiene a "docker-compose.yml"
+# docker exec -it contenedor_ecommerce_app pip install passlib
+# docker-compose stop ecommerce_app(nombre del servicio)    Parar el servicio.
+# docker-compose build ecommerce_app                        Reconstruir el servicio.
+# docker-compose up -d --no-deps ecommerce_app              Levantar únicamente el servicio de la app, sin reiniciar Postgres.
+# docker exec -it contenedor_ecommerce_app ipython          Te metes a ipyhton., cuando lo haces dentro de app esa sera tu referencia para los imports
+
+
+
