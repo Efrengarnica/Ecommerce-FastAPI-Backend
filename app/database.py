@@ -18,6 +18,10 @@ from models.user import User
 from models.product import Product
 from models.cart import Cart, CartItem
 
+Base = SQLModel #Esta parte me ayuda a que mi metadata tenga un nombre y pueda ser usada en el test de pytest
+# Base.metadata.create_all(engine) #Esto crea las tablas en una base de datos, esto sera usado en el confest.py para que al momento de levantar el contenedor 
+# de juguete se creen las tablas.
+
 
 from settings.base import DB_PORT, DB_HOST, DB_NAME, DB_USER, DB_PASSWORD
 
