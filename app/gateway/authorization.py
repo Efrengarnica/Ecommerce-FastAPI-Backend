@@ -33,7 +33,7 @@ class AuthorizationGateway:
         return token
 
     @classmethod
-    def _create_token(cls, data: dict) -> str:
+    def _create_token(cls, data: dict) -> str: #Al parecer jwt es tan rápido que no necesita ser asyn.
         """
         Create a JWT token.
         data example:
